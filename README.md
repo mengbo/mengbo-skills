@@ -18,10 +18,13 @@ Agent Skills 是模块化技能包，让 AI 助手获得特定领域的能力。
 # 安装本仓库的 skill 到项目
 npx skills add https://github.com/mengbo/mengbo-skills --skill pandoc-docx
 
+# 查看已安装到项目的 skills
+npx skills ls
+
 # 全局安装（推荐）
 npx skills add https://github.com/mengbo/mengbo-skills --skill pandoc-docx -g
 
-# 查看已安装的 skills
+# 查看已全局安装的 skills
 npx skills ls -g
 ```
 
@@ -29,15 +32,13 @@ npx skills ls -g
 
 ### 准备工作
 
-首先安装开发工具：
-
 ```bash
-# 1. 安装 find-skills（技能发现工具）
+# 1. 全局安装 find-skills（技能发现工具）
 npx skills add https://github.com/vercel-labs/add-skill \
   --skill find-skills -g -a opencode -a claude-code -y
 
-# 2. 使用 find-skills 搜索并安装 skill-creator
-# 告诉 AI："用 find-skills 帮我找 skill-creator"
+# 2. 安装 skill-creator 开发工具
+npx skills add https://github.com/vercel-labs/add-skill --skill skill-creator
 ```
 
 ### 创建新 Skill
@@ -52,8 +53,6 @@ AI 会自动帮你完成创建流程。
 
 ### 手动开发流程
 
-如果不想使用 skill-creator，可以手动创建：
-
 ```bash
 # 1. 在 skills/ 目录创建新 skill
 mkdir -p skills/my-skill
@@ -65,11 +64,11 @@ cd skills/my-skill
 # references/ - 参考文档
 # assets/    - 模板/资源文件
 
-# 3. 链接到 .agents/skills/ 进行测试
-ln -s ../../skills/my-skill ../.agents/skills/my-skill
+# 3. 在项目根目录，创建软链接进行测试
+ln -s ../../skills/my-skill .agents/skills/my-skill
 
-# 4. 测试完成后删除链接
-rm ../.agents/skills/my-skill
+# 4. 测试完成后，删除软链接
+rm .agents/skills/my-skill
 ```
 
 ## 项目结构
@@ -80,41 +79,16 @@ mengbo-skills/
 │   └── pandoc-docx/             # 真实 skill 内容
 ├── .agents/skills/              # AI 助手使用目录（运行目录，被 gitignore 排除）
 │   ├── pandoc-docx -> ../../skills/pandoc-docx  # 软链接（测试用）
-│   ├── skill-creator/           # 外部安装的 skill（通过 find-skills）
+│   ├── skill-creator/           # 外部安装的 skill
 │   └── find-skills/             # 外部安装的 skill
-├── README.md                    # 项目说明
-└── AGENTS.md                    # Agent 配置
+├── README.md                    # 项目说明（本文件）
+└── AGENTS.md                    # AI 助手配置（技术细节）
 ```
 
 **目录说明：**
 
 - `skills/`：开发目录，存放自己编写的 skills，会被版本控制
 - `.agents/skills/`：运行目录，外部安装的 skills 和测试用软链接，**不会被提交**
-
-**注意**：外部安装的 skills（如 skill-creator、find-skills）放在 `.agents/skills/`，这些不会被 git 跟踪。每个开发者需要自己安装。
-
-## 推荐的开发工具
-
-### find-skills
-
-发现和安装 agent skills 的工具：
-
-```bash
-npx skills add https://github.com/vercel-labs/add-skill \
-  --skill find-skills -g -a opencode -a claude-code -y
-```
-
-### skill-creator
-
-创建新 skills 的完整指南，通过 find-skills 安装：
-
-```bash
-# 安装到项目
-npx skills add https://github.com/vercel-labs/add-skill --skill skill-creator
-
-# 或全局安装
-npx skills add https://github.com/vercel-labs/add-skill --skill skill-creator -g
-```
 
 ## 设计原则
 
