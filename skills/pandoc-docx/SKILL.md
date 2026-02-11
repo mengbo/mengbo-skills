@@ -1,6 +1,14 @@
 ---
 name: pandoc-docx
-description: Universal document conversion using Pandoc with focus on DOCX format. Use when converting documents to or from DOCX format, including Markdown, HTML, PDF, and other formats. Supports: (1) Converting other formats to DOCX (Markdown, HTML, reStructuredText, etc.), (2) Converting DOCX to other formats, (3) Custom DOCX templates and styling, (4) Batch document processing
+description: >-
+  Universal document conversion using Pandoc with focus on DOCX format.
+  Use when converting documents to or from DOCX format, including Markdown,
+  HTML, PDF, and other formats.
+  Supports:
+  (1) Converting other formats to DOCX (Markdown, HTML, reStructuredText, etc.),
+  (2) Converting DOCX to other formats,
+  (3) Custom DOCX templates and styling,
+  (4) Batch document processing
 ---
 
 # Pandoc Docx
@@ -38,12 +46,12 @@ pandoc import/input.md -o export/output.docx
 
 **Use skill's Chinese template:**
 ```bash
-# Adjust path based on skill location:
-# - If skill is at project root: pandoc-docx/assets/templates.docx
-# - If installed via .agents/skills/: .agents/skills/pandoc-docx/assets/templates.docx
+# Path depends on where skill is installed:
+# - Project local: .agents/skills/pandoc-docx/ (or your skill installation path)
+# - Global: ~/.config/skills/pandoc-docx/ (varies by OS and tool)
 
 pandoc import/input.md -o export/output.docx \
-  --reference-doc=.agents/skills/pandoc-docx/assets/templates.docx
+  --reference-doc=<skill-path>/assets/templates.docx
 ```
 
 ## Convert from DOCX
@@ -61,9 +69,11 @@ pandoc import/document.docx -o export/document.md --extract-media=export/images/
 ## Batch Processing
 
 ```bash
+SKILL_PATH="<skill-path>"  # Adjust to your skill installation path
+
 for file in import/*.md; do
   pandoc "$file" -o "export/$(basename "${file%.md}").docx" \
-    --reference-doc=.agents/skills/pandoc-docx/assets/templates.docx
+    --reference-doc=$SKILL_PATH/assets/templates.docx
 done
 ```
 
@@ -75,14 +85,13 @@ done
 
 ### Using convert.sh
 
-Run from project root:
 ```bash
-# Basic usage
-./pandoc-docx/scripts/convert.sh report.md report.docx
+# Run from project root. Adjust <skill-path> to where skill is installed:
+<skill-path>/scripts/convert.sh report.md report.docx
 
 # With options
-./pandoc-docx/scripts/convert.sh report.md report.docx --toc
+<skill-path>/scripts/convert.sh report.md report.docx --toc
 
 # Absolute paths work as usual
-./pandoc-docx/scripts/convert.sh /path/to/input.md /path/to/output.docx
+<skill-path>/scripts/convert.sh /path/to/input.md /path/to/output.docx
 ```
