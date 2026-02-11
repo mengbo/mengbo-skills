@@ -5,108 +5,84 @@ description: Universal document conversion using Pandoc with focus on DOCX forma
 
 # Pandoc Docx
 
-## Overview
+## Prerequisites
 
-Use Pandoc for reliable document format conversion to and from DOCX.
-
-## Directory Conventions
-
-Use project root directories (not skill directory):
-- `import/` - Source files to convert (project root)
-- `export/` - Converted output files (project root)
-
-**Example from project root:**
+Ensure Pandoc is installed:
 ```bash
-pandoc import/report.md -o export/report.docx
+pandoc --version
+# If not installed: brew install pandoc (macOS) or apt-get install pandoc (Linux)
 ```
+
+## Directory Setup
+
+Create working directories in your project root:
+```bash
+mkdir -p import export
+```
+
+- `import/` - Source files to convert
+- `export/` - Converted output files
 
 ## Convert to DOCX
 
-Convert from Markdown, HTML, reStructuredText, or other Pandoc-supported formats:
-
+Basic conversion:
 ```bash
-pandoc input.md -o output.docx
+pandoc import/input.md -o export/output.docx
 ```
 
-**Common use cases:**
+**Common options:**
 - `--reference-doc=template.docx` - Apply custom styling
 - `--toc` - Generate table of contents
 - `--toc-depth=2` - Set TOC depth
 - `--metadata="title=My Document"` - Set document metadata
 
-**Example:**
+**Use skill's Chinese template:**
 ```bash
-pandoc report.md -o report.docx --toc --reference-doc=brand-template.docx
-```
+# Adjust path based on skill location:
+# - If skill is at project root: pandoc-docx/assets/templates.docx
+# - If installed via .agents/skills/: .agents/skills/pandoc-docx/assets/templates.docx
 
-**Use built-in Chinese template:**
-The skill includes a Chinese template with:
-- Title numbering
-- List items with second-line indentation
-- Code block highlighting
-```bash
-pandoc import/input.md -o export/output.docx --reference-doc=pandoc-docx/assets/templates.docx
+pandoc import/input.md -o export/output.docx \
+  --reference-doc=.agents/skills/pandoc-docx/assets/templates.docx
 ```
 
 ## Convert from DOCX
 
-Extract content from DOCX to other formats:
-
-```bash
-pandoc input.docx -o output.md
-```
-
-**Common use cases:**
-- `--extract-media=media/` - Extract embedded images
-- `-t markdown` - Output as Markdown
-- `-t html` - Output as HTML
-- `--standalone` - Create complete document
-
-**Example:**
 ```bash
 pandoc import/document.docx -o export/document.md --extract-media=export/images/
 ```
 
 ## Custom Templates
 
-Create branded DOCX documents:
-
-1. Generate default template:
-   ```bash
-   pandoc --print-default-data-file reference.docx > reference.docx
-   ```
-
+1. Generate default template: `pandoc --print-default-data-file reference.docx > reference.docx`
 2. Edit styles in Word
-
-3. Apply during conversion:
-   ```bash
-   pandoc import/input.md -o export/output.docx --reference-doc=reference.docx
-   ```
+3. Apply: `pandoc import/input.md -o export/output.docx --reference-doc=reference.docx`
 
 ## Batch Processing
 
-Convert multiple files (run from project root):
-
 ```bash
 for file in import/*.md; do
-  pandoc "$file" -o "export/$(basename "${file%.md}").docx" --reference-doc=pandoc-docx/assets/templates.docx
+  pandoc "$file" -o "export/$(basename "${file%.md}").docx" \
+    --reference-doc=.agents/skills/pandoc-docx/assets/templates.docx
 done
 ```
 
 ## Resources
 
-### assets/templates.docx
-Chinese DOCX template with title numbering, formatted lists, and code highlighting.
+- **assets/templates.docx** - Chinese DOCX template with title numbering and code highlighting
+- **scripts/convert.sh** - Helper script for conversions (see usage below)
+- **references/pandoc-options.md** - Complete option reference and advanced patterns
 
-### scripts/convert.sh
-Run from project root directory (not skill directory):
+### Using convert.sh
+
+Run from project root:
 ```bash
+# Basic usage
 ./pandoc-docx/scripts/convert.sh report.md report.docx
-./pandoc-docx/scripts/convert.sh report.md report.docx --toc --reference-doc=pandoc-docx/assets/templates.docx
+
+# With options
+./pandoc-docx/scripts/convert.sh report.md report.docx --toc
 
 # Absolute paths work as usual
 ./pandoc-docx/scripts/convert.sh /path/to/input.md /path/to/output.docx
 ```
-
-### references/pandoc-options.md
-Complete reference for Pandoc options and advanced patterns.

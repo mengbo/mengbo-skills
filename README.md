@@ -1,99 +1,127 @@
 # MengBo Skills
 
-个人 Agent Skills 仓库，用于管理和版本控制个人定制的 skills，配合 [openskills](https://github.com/numman-ali/openskills) 实现按项目定制的渐进式技能管理。
+个人 Agent Skills 仓库，配合 [vercel-labs/skills](https://github.com/vercel-labs/skills) 使用。
 
-## 核心理念
+## 什么是 Agent Skills？
 
-**渐进式披露（Progressive Disclosure）**
+Agent Skills 是模块化技能包，让 AI 助手获得特定领域的能力。本仓库用于开发和版本控制个人定制的 skills。
 
-- **初始上下文**：仅加载技能名称和描述（AGENTS.md 中的 `<available_skills>` 部分）
-- **按需加载**：完整指令仅在调用时通过 `openskills read <skill-name>` 注入
-- **优势**：减少初始 token 消耗，让 Agent 专注于真正相关的技能
+## 可用的 Skills
 
-### 对比传统方式
+| Skill | 功能 |
+|-------|------|
+| **pandoc-docx** | 使用 Pandoc 进行文档格式转换，支持 Markdown、HTML、PDF 等格式与 DOCX 互转 |
 
-| 方式 | 上下文占用 | 灵活性 | 适用场景 |
-|------|-----------|---------|---------|
-| **传统方式** | 一次性注入所有 skills 的完整指令 | 低 | 技能数量少且通用性强 |
-| **渐进式披露** | 仅注入技能元数据，按需加载完整指令 | 高 | 技能数量多、按项目定制 |
-
-主流 AI 编程助手通常会将所有 skills 的元数据一次性注入到上下文，这会造成不必要的 token 消耗。而通过 `openskills sync` 在 AGENTS.md 中添加项目相关的 skill，能够实现按项目定制的精细化披露，大幅减少初始上下文占用。
-
-## 快速开始
-
-### 在本仓库中使用
+## 在其他项目中使用
 
 ```bash
-# 克隆仓库
-git clone https://github.com/mengbo/mengbo-skills.git
-cd mengbo-skills
+# 安装本仓库的 skill 到项目
+npx skills add https://github.com/mengbo/mengbo-skills --skill pandoc-docx
 
-# 安装 openskills（如未安装）
-npm install -g openskills
+# 全局安装（推荐）
+npx skills add https://github.com/mengbo/mengbo-skills --skill pandoc-docx -g
 
-# 设置软链接
-mkdir -p .agent && ln -s ../skills .agent/skills
-# 软链接作用：.agent/skills 是 openskills 默认查找 skills 的位置
-# 软链接指向 skills/ 目录，当访问 .agent/skills/your-skill-name/ 时，实际访问的是 skills/your-skill-name/
-# 这样 openskills 和 AI 就能读取到 skills/your-skill-name/ 下的 SKILL.md、scripts/、references/、assets/ 文件
-
-# 同步到 AGENTS.md
-openskills sync
-```
-
-### 在其他项目中使用
-
-```bash
-openskills install mengbo/mengbo-skills --universal
-openskills sync
+# 查看已安装的 skills
+npx skills ls -g
 ```
 
 ## 开发新 Skill
 
-创建新 skill 使用 AI 编程助手（如 opencode、Claude Code），配合 anthropics/skills 的 skill-creator 指导：
+### 准备工作
+
+首先安装开发工具：
 
 ```bash
-# 1. 安装 anthropics/skills（universal 模式）
-openskills install anthropics/skills --universal
+# 1. 安装 find-skills（技能发现工具）
+npx skills add https://github.com/vercel-labs/add-skill \
+  --skill find-skills -g -a opencode -a claude-code -y
 
-# 2. 同步到 AGENTS.md，确保 skill-creator 可用
-openskills sync
+# 2. 使用 find-skills 搜索并安装 skill-creator
+# 告诉 AI："用 find-skills 帮我找 skill-creator"
+```
 
-# 3. 使用 AI 编程助手创建新 skill
-# 在 opencode 中输入：创建一个名为 your-skill-name 的新 skill
-# AI 会自动读取 skill-creator 指导并帮你完成
+### 创建新 Skill
 
-# 4. 测试新 skill
-openskills sync
+安装好 skill-creator 后，直接告诉 AI 助手：
 
-# 5. 提交到 GitHub
-git add skills/your-skill-name
-git commit -m "Add your-skill-name"
-git push
+```
+"创建一个名为 my-skill 的新 skill"
+```
+
+AI 会自动帮你完成创建流程。
+
+### 手动开发流程
+
+如果不想使用 skill-creator，可以手动创建：
+
+```bash
+# 1. 在 skills/ 目录创建新 skill
+mkdir -p skills/my-skill
+cd skills/my-skill
+
+# 2. 编写 SKILL.md（必需）和可选资源
+# SKILL.md - YAML frontmatter + 使用说明
+# scripts/   - 可执行脚本
+# references/ - 参考文档
+# assets/    - 模板/资源文件
+
+# 3. 链接到 .agents/skills/ 进行测试
+ln -s ../../skills/my-skill ../.agents/skills/my-skill
+
+# 4. 测试完成后删除链接
+rm ../.agents/skills/my-skill
 ```
 
 ## 项目结构
 
 ```
 mengbo-skills/
-├── README.md         # 项目说明
-├── AGENTS.md         # Agent 配置文件
-├── .gitignore
-├── .agent/
-│   └── skills -> ../skills   # 软链接：指向 skills/ 目录
-└── skills/          # Skills 源代码（主目录，版本控制）
-    └── your-skill-name/
-        ├── SKILL.md
-        ├── assets/
-        ├── references/
-        └── scripts/
+├── skills/                      # 自己开发的 skills（版本控制）
+│   └── pandoc-docx/             # 真实 skill 内容
+├── .agents/skills/              # AI 助手使用目录（运行目录，被 gitignore 排除）
+│   ├── pandoc-docx -> ../../skills/pandoc-docx  # 软链接（测试用）
+│   ├── skill-creator/           # 外部安装的 skill（通过 find-skills）
+│   └── find-skills/             # 外部安装的 skill
+├── README.md                    # 项目说明
+└── AGENTS.md                    # Agent 配置
 ```
 
-**软链接作用**：
-- `.agent/skills` 是 openskills 默认查找 skills 的位置
-- 软链接指向 `skills/` 目录，当访问 `.agent/skills/your-skill-name/` 时，实际访问的是 `skills/your-skill-name/`
-- 软链接指向整个 `skills/` 目录，在 `skills/` 目录下创建新 skill 后，新 skill 自动可以通过软链接访问，无需重新配置
-- 克隆仓库后需手动创建：`ln -s ../skills .agent/skills`
+**目录说明：**
+
+- `skills/`：开发目录，存放自己编写的 skills，会被版本控制
+- `.agents/skills/`：运行目录，外部安装的 skills 和测试用软链接，**不会被提交**
+
+**注意**：外部安装的 skills（如 skill-creator、find-skills）放在 `.agents/skills/`，这些不会被 git 跟踪。每个开发者需要自己安装。
+
+## 推荐的开发工具
+
+### find-skills
+
+发现和安装 agent skills 的工具：
+
+```bash
+npx skills add https://github.com/vercel-labs/add-skill \
+  --skill find-skills -g -a opencode -a claude-code -y
+```
+
+### skill-creator
+
+创建新 skills 的完整指南，通过 find-skills 安装：
+
+```bash
+# 安装到项目
+npx skills add https://github.com/vercel-labs/add-skill --skill skill-creator
+
+# 或全局安装
+npx skills add https://github.com/vercel-labs/add-skill --skill skill-creator -g
+```
+
+## 设计原则
+
+1. **简洁优先**：SKILL.md 保持精炼
+2. **明确描述**：description 清晰说明何时使用
+3. **渐进式披露**：核心内容在 SKILL.md，细节放入 references/
+4. **经过验证**：scripts 必须测试
 
 ## License
 
@@ -101,6 +129,6 @@ Apache 2.0
 
 ## 相关资源
 
-- [openskills](https://github.com/numman-ali/openskills) - Universal skills loader
-- [anthropics/skills](https://github.com/anthropics/skills) - Anthropic's official skills
+- [vercel-labs/skills](https://github.com/vercel-labs/skills)
+- [anthropics/skills](https://github.com/anthropics/skills)
 - [Agent Skills 标准](https://agentskills.io)

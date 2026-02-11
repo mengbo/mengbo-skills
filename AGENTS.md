@@ -1,116 +1,184 @@
 # AGENTS
 
-<skills_system priority="1">
+## 目录结构
 
-## Available Skills
-
-<!-- SKILLS_TABLE_START -->
-<usage>
-When users ask you to perform tasks, check if any of the available skills below can help complete the task more effectively. Skills provide specialized capabilities and domain knowledge.
-
-How to use skills:
-- Invoke: Bash("openskills read <skill-name>")
-- The skill content will load with detailed instructions on how to complete the task
-- Base directory provided in output for resolving bundled resources (references/, scripts/, assets/)
-
-Usage notes:
-- Only use skills listed in <available_skills> below
-- Do not invoke a skill that is already loaded in your context
-- Each skill invocation is stateless
-</usage>
-
-<available_skills>
-
-<skill>
-<name>skill-creator</name>
-<description>Guide for creating effective skills. This skill should be used when users want to create a new skill (or update an existing skill) that extends Claude's capabilities with specialized knowledge, workflows, or tool integrations.</description>
-<location>global</location>
-</skill>
-
-</available_skills>
-<!-- SKILLS_TABLE_END -->
-
-</skills_system>
-
----
-
-**注意**：上方 `<skills_system>` 标记内的内容由 `openskills` 自动维护，AI 编程助手不需要修改此部分。
-
-## Skill 工作原理
-
-### 渐进式披露机制
-
-- **初始上下文**：仅加载技能名称和描述（本文件的 `<available_skills>` 部分）
-- **按需加载**：完整指令仅在调用时通过 `openskills read <skill-name>` 注入
-- **优势**：减少初始 token 消耗，让 Agent 专注于真正相关的技能
-
-### 使用流程
-
-1. **同步 skills**：运行 `openskills sync` 更新本文件的 `<available_skills>` 部分
-2. **加载 skill**：运行 `openskills read <skill-name>` 注入完整指令
-3. **执行任务**：Agent 按照指令完成任务
-4. **资源解析**：通过 base directory 解析 references/、scripts/、assets/ 路径
-
-### Skills 目录说明
-
-本仓库使用软链接方式管理 skills：
-- `.agent/skills` 是 openskills 默认查找 skills 的位置（软链接）
-- 通过软链接指向 `skills/` 源代码目录
-- 实际的 skill 文件（SKILL.md、scripts/、references/、assets/）位于 `skills/your-skill-name/` 子目录下
-- 通过软链接，Agent 可以使用 `.agent/skills/your-skill-name/` 路径访问 skill 文件
-- 软链接指向整个 `skills/` 目录，在 `skills/` 目录下创建新 skill 后，新 skill 自动可以通过软链接访问，无需重新配置
-
-注意：如果软链接不存在，需要手动创建：`ln -s ../skills .agent/skills`
-
-### 目录结构规范
-
-每个 skill 应包含：
+本仓库采用分离式目录管理：
 
 ```
-your-skill-name/
-├── SKILL.md          # 必需：YAML frontmatter + 指令
-├── scripts/          # 可选：可执行脚本
-├── references/       # 可选：参考文档
-└── assets/           # 可选：模板/资源文件
+mengbo-skills/
+├── skills/                      # 开发目录（版本控制）
+│   └── pandoc-docx/             # 自己开发的 skill 源代码
+├── .agents/skills/              # 运行目录（AI 查找）
+│   ├── pandoc-docx -> ../../skills/pandoc-docx  # 软链接（测试用）
+│   ├── skill-creator/           # 外部安装的 skill（通过 find-skills）
+│   └── find-skills/             # 外部安装的 skill
+└── AGENTS.md                    # 本文件
 ```
 
-**SKILL.md 格式**：
+| 目录 | 用途 | 版本控制 | 存放内容 |
+|------|------|----------|----------|
+| `skills/` | 开发目录 | 是 | 自己开发的 skill 源代码 |
+| `.agents/skills/` | 运行目录 | 否 | 外部安装的 skills + 软链接 |
 
-```markdown
+**重要**：`.agents/` 被 `.gitignore` 排除，外部安装的 skills 不会被提交。
+
+## 创建新 Skill
+
+### 准备工作
+
+用户需要先安装开发工具：
+
+```bash
+# 安装 find-skills
+npx skills add https://github.com/vercel-labs/add-skill \
+  --skill find-skills -g -a opencode -a claude-code -y
+
+# 使用 find-skills 安装 skill-creator
+npx skills add https://github.com/vercel-labs/add-skill --skill skill-creator
+```
+
+### 使用 skill-creator（推荐）
+
+安装好 skill-creator 后，用户可以告诉 AI：
+
+```
+"创建一个名为 my-skill 的新 skill"
+```
+
+AI 会自动加载 skill-creator 并执行创建流程。
+
+### 手动流程
+
+```bash
+# 1. 在 skills/ 创建目录
+mkdir -p skills/my-skill
+cd skills/my-skill
+
+# 2. 创建 SKILL.md 模板
+cat > SKILL.md << 'EOF'
 ---
-name: your-skill-name
+name: my-skill
 description: 清晰描述这个 skill 的功能和何时使用它
 ---
 
-# Skill Name
-
-当用户请求 X 时，遵循这些步骤...
+# My Skill
 
 ## 使用示例
 
 - 示例 1
 - 示例 2
+EOF
 
-## 最佳实践
+# 3. 可选：创建资源目录
+mkdir -p scripts references assets
 
-- 原则 1
-- 原则 2
+# 4. 链接到 .agents/skills/ 测试
+ln -s ../../skills/my-skill ../../.agents/skills/my-skill
+
+# 5. 删除链接（测试完成后）
+rm ../../.agents/skills/my-skill
 ```
 
-**注意事项**：
-- `name` 和 `description` 是唯一会被注入到初始上下文的字段
-- `description` 必须清晰说明 skill 的功能和触发条件
-- 详细的指令和使用指南放在 markdown body 部分
-- 保持 SKILL.md 简洁（推荐 <500 行），将详细内容放到 `references/` 目录
+## Skill 目录规范
 
-### 资源类型说明
+### 必需文件
 
-- **scripts/**：可执行代码（Python、Bash 等），用于需要确定性可靠性的任务
-- **references/**：参考文档，包含 API 文档、模式、业务逻辑等详细文档
-- **assets/**：输出资源文件，如模板、图标、样板代码等，不会加载到上下文
+```
+skill-name/
+└── SKILL.md              # YAML frontmatter + 指令
+```
 
-### 相关资源
+**SKILL.md 格式**：
+- **Frontmatter**（必须）：
+  - `name`: skill 名称
+  - `description`: 描述功能和触发条件（这是触发 skill 的关键）
+- **Body**: 使用指南和最佳实践
 
-- [OpenSkills 文档](https://github.com/numman-ali/openskills)
+**重要**：`name` 和 `description` 是唯一会注入初始上下文的字段，description 必须清晰说明何时使用。
+
+### 可选资源
+
+```
+skill-name/
+├── scripts/              # 可执行代码（Python/Bash）
+│   └── script.py
+├── references/           # 参考文档（按需加载）
+│   └── api-docs.md
+└── assets/               # 输出资源（模板、图标等）
+    └── template.docx
+```
+
+**资源类型说明**：
+- **scripts/**：需要确定性可靠性的任务，可执行不读取到上下文
+- **references/**：详细文档，在需要时读取（大文件 >10k 字需注明 grep 搜索方式）
+- **assets/**：输出使用的文件，不加载到上下文
+
+## 渐进式披露原则
+
+Skills 使用三级加载系统：
+
+1. **Metadata** (name + description)：始终在上下文 (~100 词)
+2. **SKILL.md body**：skill 触发后加载 (<5k 词)
+3. **Bundled resources**：按需加载（scripts 可直接执行）
+
+**保持 SKILL.md 精简**：
+- 推荐 <500 行
+- 核心工作流在 SKILL.md
+- 变体/细节移到 references/
+
+**组织模式**：
+```markdown
+# Skill Name
+
+## 核心功能
+[基础用法]
+
+## 高级特性
+- **功能 A**: 见 [A.md](A.md)
+- **功能 B**: 见 [B.md](B.md)
+```
+
+## 测试命令
+
+```bash
+# 创建软链接进行测试
+ln -s ../../skills/my-skill .agents/skills/my-skill
+
+# 删除软链接
+rm .agents/skills/my-skill
+
+# 查看所有 skills
+ls -la .agents/skills/
+
+# 查看软链接目标
+ls -la skills/
+```
+
+## 安装外部 Skills
+
+```bash
+# 安装到项目
+npx skills add https://github.com/vercel-labs/add-skill --skill find-skills
+
+# 全局安装
+npx skills add https://github.com/vercel-labs/add-skill --skill find-skills -g
+```
+
+## 不要做的事
+
+**不要创建额外文档文件**：
+- ❌ README.md
+- ❌ INSTALLATION_GUIDE.md
+- ❌ QUICK_REFERENCE.md
+- ❌ CHANGELOG.md
+
+Skill 只包含 AI 完成任务必需的内容，不要包含辅助性文档。
+
+**不要提交外部安装的 skills**：
+`.agents/` 被 gitignore 排除，外部 skills 不会被提交。每个开发者需要自己安装。
+
+## 相关资源
+
+- [skill-creator](skill-creator/SKILL.md) - 创建 skills 的完整指南（需先安装）
 - [Anthropic Skills](https://github.com/anthropics/skills)
 - [Agent Skills 标准](https://agentskills.io)
