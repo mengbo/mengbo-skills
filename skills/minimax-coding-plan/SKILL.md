@@ -1,188 +1,125 @@
 ---
 name: minimax-coding-plan
-description: MiniMax Coding Plan MCP provides web search and image understanding capabilities for developers. Use when you need to search real-time information on the web or analyze/understand image content. Supports Claude Code, Cursor, OpenCode, and other MCP-compatible clients.
+description: MiniMax Coding Plan MCP - Web search and image understanding tools for developers
 version: 1.0.0
 ---
 
-# MiniMax Coding Plan
+# MiniMax Skill
 
-MiniMax Coding Plan MCP provides two specialized tools to help developers quickly retrieve information and understand image content during coding.
+MiniMax Coding Plan MCP provides two specialized tools: **web_search** and **understand_image**, to help developers quickly retrieve information and understand image content during coding.
 
-## Tools
+## Environment Variables
+
+**Required:**
+- `MINIMAX_API_KEY`: MiniMax API Key (get from https://platform.minimaxi.com/subscribe/coding-plan)
+
+**Optional:**
+- `MINIMAX_API_HOST`: API host URL, defaults to `https://api.minimaxi.com`
+- `MINIMAX_MCP_BASE_PATH`: Local output directory path
+- `MINIMAX_API_RESOURCE_MODE`: Resource mode (`url` or `local`), defaults to `url`
+
+## Available Tools
 
 ### web_search
 
 Performs web search based on a query and returns search results with related suggestions.
 
-**Parameters:**
+**Args:**
+- `query` (str, required): Search query. Use 3-5 keywords for best results. For time-sensitive topics, include the current date (e.g., `latest iPhone 2025`).
 
-| Parameter | Type   | Required | Description     |
-|:----------|:-------|:---------|:----------------|
-| query     | string | Yes      | Search query string |
+**Returns:** JSON object containing search results:
+```json
+{
+    "organic": [
+        {
+            "title": "Search result title",
+            "link": "Result URL",
+            "snippet": "Brief description or excerpt",
+            "date": "Result date"
+        }
+    ],
+    "related_searches": [{"query": "Related search suggestion"}],
+    "base_resp": {"status_code": status_code, "status_msg": "Status message"}
+}
+```
 
-**Returns:** JSON object containing search results with organic results, related searches, and status.
+**Search Strategy:**
+- If no useful results are returned, try rephrasing your query with different keywords.
 
 ### understand_image
 
-Analyzes and interprets image content based on a prompt/question.
+Analyzes and interprets image content from local files or URLs based on instructions.
 
-**Parameters:**
+**Args:**
+- `prompt` (str, required): A text prompt describing what to analyze or extract from the image.
+- `image_source` (str, required): Image source URL or file path.
+    - URL: `https://example.com/image.jpg`
+    - Relative path: `images/photo.png`
+    - Absolute path: `/Users/username/Documents/image.jpg`
+    - **Note**: If the file path starts with `@`, remove the `@` prefix.
 
-| Parameter  | Type   | Required | Description                                   |
-|:-----------|:-------|:---------|:----------------------------------------------|
-| prompt     | string | Yes      | Question or analysis requirement for the image |
-| image_url  | string | Yes      | Image source - HTTP/HTTPS URL or local file path |
-
-**Supported formats:** JPEG, PNG, GIF, WebP (max 20MB)
+**Supported formats:** JPEG, PNG, WebP (max 20MB)
 
 **Returns:** Text description of the image analysis result.
 
-## Prerequisites
+## Usage
 
-### 1. Get API Key
-
-Visit the [Coding Plan subscription page](https://platform.minimaxi.com/subscribe/coding-plan) to subscribe and get your API Key.
-
-### 2. Install uvx
-
-**macOS / Linux:**
-```bash
-curl -LsSf https://astral.sh/uv/install.sh | sh
-```
-
-**Windows:**
-```powershell
-powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
-```
-
-For other installation methods, see the [uv repository](https://github.com/astral-sh/uv).
-
-### 3. Verify Installation
+### Execute Tools
 
 ```bash
-which uvx
+$SKILL_DIR/scripts/exec-with-env.sh $SKILL_DIR/mcp-config.json <tool_name> '<arguments_json>'
 ```
 
-If installed correctly, it will show the path (e.g., `/usr/local/bin/uvx`).
+### Examples
 
-## Configuration
-
-### Claude Code
-
-**Quick Install:**
+**Web Search:**
 ```bash
-claude mcp add -s user MiniMax --env MINIMAX_API_KEY=your_api_key --env MINIMAX_API_HOST=https://api.minimaxi.com -- uvx minimax-coding-plan-mcp -y
+$SKILL_DIR/scripts/exec-with-env.sh $SKILL_DIR/mcp-config.json web_search '{"query": "latest react features 2025"}'
 ```
 
-**Manual Configuration:**
-
-Edit `~/.claude.json`:
-```json
-{
-  "mcpServers": {
-    "MiniMax": {
-      "command": "uvx",
-      "args": ["minimax-coding-plan-mcp", "-y"],
-      "env": {
-        "MINIMAX_API_KEY": "your_api_key",
-        "MINIMAX_API_HOST": "https://api.minimaxi.com"
-      }
-    }
-  }
-}
+**Image Understanding:**
+```bash
+$SKILL_DIR/scripts/exec-with-env.sh $SKILL_DIR/mcp-config.json understand_image '{"prompt": "Describe this image", "image_source": "https://example.com/image.jpg"}'
 ```
 
-### Cursor
+## Execution Strategy
 
-Go to `Cursor -> Preferences -> Cursor Settings -> Tools & Integrations -> MCP -> Add Custom MCP`
+**Important: Execute directly, don't ask beforehand**
 
-Add to `mcp.json`:
-```json
-{
-  "mcpServers": {
-    "MiniMax": {
-      "command": "uvx",
-      "args": ["minimax-coding-plan-mcp"],
-      "env": {
-        "MINIMAX_API_KEY": "your_api_key",
-        "MINIMAX_API_HOST": "https://api.minimaxi.com"
-      }
-    }
-  }
-}
-```
+When using this skill, **execute commands directly** without asking users to confirm environment variables are set.
 
-**Optional environment variables:**
-- `MINIMAX_MCP_BASE_PATH`: Local output directory path (must exist with write permissions)
-- `MINIMAX_API_RESOURCE_MODE`: Resource mode - `url` or `local` (default: `url`)
+- Environment variable status is determined at execution time
+- If execution fails, the error message will clearly indicate missing configuration
+- Only then inform the user what needs to be configured
+- Follow "fail fast" principle to avoid unnecessary interactions
 
-### OpenCode
+**Don't do this:**
+- "Please confirm you have set the MINIMAX_API_KEY environment variable"
+- "Before executing, please ensure you have configured..."
 
-Edit `~/.config/opencode/opencode.json`:
-```json
-{
-  "$schema": "https://opencode.ai/config.json",
-  "mcp": {
-    "MiniMax": {
-      "type": "local",
-      "command": ["uvx", "minimax-coding-plan-mcp", "-y"],
-      "environment": {
-        "MINIMAX_API_KEY": "your_api_key",
-        "MINIMAX_API_HOST": "https://api.minimaxi.com"
-      },
-      "enabled": true
-    }
-  }
-}
-```
-
-### Generic MCP Configuration
-
-For other MCP-compatible clients:
-
-```json
-{
-  "mcpServers": {
-    "MiniMax": {
-      "command": "uvx",
-      "args": ["minimax-coding-plan-mcp", "-y"],
-      "env": {
-        "MINIMAX_API_KEY": "your_api_key",
-        "MINIMAX_API_HOST": "https://api.minimaxi.com"
-      }
-    }
-  }
-}
-```
-
-## Environment Variables
-
-| Variable                    | Required | Default                  | Description                                           |
-|:----------------------------|:---------|:-------------------------|:------------------------------------------------------|
-| `MINIMAX_API_KEY`           | Yes      | -                        | Your MiniMax API Key from the subscription page       |
-| `MINIMAX_API_HOST`          | No       | `https://api.minimaxi.com` | API endpoint host                                    |
-| `MINIMAX_MCP_BASE_PATH`     | No       | -                        | Local output directory for temporary files            |
-| `MINIMAX_API_RESOURCE_MODE` | No       | `url`                    | Resource mode: `url` or `local`                       |
+**Do this:**
+- Execute the command directly
+- If it fails, inform the user based on the error message
 
 ## Use Cases
 
-- **Web Search:** Use when you need current information, news, facts, or data beyond your knowledge cutoff
-- **Image Understanding:** Use when you need to analyze, describe, or extract information from images provided by users
+- Need to search for real-time or external information → **Use web_search**
+- Need to analyze, describe, or extract information from an image → **Use understand_image**
+- User provides an image that needs understanding → **Use understand_image**
 
-## Troubleshooting
+## Error Handling
 
-**Error: spawn uvx ENOENT**
-- uvx is not in your PATH. Either:
-  - Add uvx to your system PATH
-  - Use the absolute path to uvx in the configuration
+If execution returns an error:
+- Check the tool name is correct
+- Verify required arguments are provided (marked with `*` in signatures above)
+- Ensure `MINIMAX_API_KEY` environment variable is set
+- Check the MCP server is accessible
 
-**Configuration not working**
-- Verify your API Key is correct and active
-- Check that uvx is installed: `uvx --version`
-- Ensure the MCP configuration syntax matches your client
+---
 
-## Reference
+*This skill was auto-generated from an MCP server configuration.*
+*Generator: [mcp-to-skill](https://github.com/larkinwc/ts-mcp-to-skill)*
 
-- [MiniMax Platform](https://platform.minimaxi.com/)
-- [Coding Plan Subscription](https://platform.minimaxi.com/subscribe/coding-plan)
-- [uv Documentation](https://docs.astral.sh/uv/)
+## References
+
+- [MiniMax Coding Plan MCP Official Documentation](https://platform.minimaxi.com/docs/guides/coding-plan-mcp-guide)
