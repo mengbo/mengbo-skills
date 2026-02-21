@@ -76,7 +76,13 @@ npx skills add https://github.com/vercel-labs/add-skill --skill find-skills
 
 ## 约束规则
 
-**不要创建额外文档文件**：
+**使用英文编写**：
+Skill 是项目的输出产物，不仅面向中文用户，应使用英文编写以确保全球可用性。
+- SKILL.md 正文使用英文
+- 注释和文档使用英文
+- 输出消息和错误信息使用英文
+
+**不要创建额外文档文件**：：
 - ❌ README.md
 - ❌ INSTALLATION_GUIDE.md
 - ❌ QUICK_REFERENCE.md
