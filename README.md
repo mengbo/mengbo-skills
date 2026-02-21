@@ -12,7 +12,7 @@ Agent Skills 是模块化技能包，让 AI 助手获得特定领域的能力。
 |-------|------|
 | **pandoc-docx** | 使用 Pandoc 进行文档格式转换，支持 Markdown、HTML、PDF 等格式与 DOCX 互转 |
 | **minimax-coding-plan** | MiniMax Coding Plan MCP - 提供 Web 搜索和图片理解工具 |
-| **mcp-to-skill** | 将 MCP 服务器配置转换为 Claude/opencode Skill |
+| **mcp-to-skill** | 将 MCP 服务器配置转换为 Agent Skill |
 
 ## 在其他项目中使用
 

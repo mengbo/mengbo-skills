@@ -93,6 +93,12 @@ Skill 只包含 AI 完成任务必需的内容，不要包含辅助性文档。
 **不要提交外部安装的 skills**：
 `.agents/` 被 gitignore 排除，外部 skills 不会被提交。每个开发者需要自己安装。
 
+**保持平台无关性**：
+Skill 是通用的 Agent 能力扩展，描述应避免绑定特定 AI 工具或平台。
+- 不在 description 中提及具体的 AI 助手名称（如 Claude、GPT、opencode 等）
+- 使用通用术语如 "AI assistant" 或 "Agent" 而非特定产品名
+- 聚焦功能本身，让用户自行决定在什么场景下使用
+
 ## 相关资源
 
 - [skill-creator](.agents/skills/skill-creator/SKILL.md) - 创建 skills 的完整指南（需先安装）

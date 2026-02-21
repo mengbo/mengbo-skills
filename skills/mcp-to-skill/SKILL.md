@@ -1,6 +1,6 @@
 ---
 name: mcp-to-skill
-description: Convert MCP server configuration to Claude/opencode Skill. Triggered when users mention "MCP to skill", "convert MCP service to skill", "generate MCP skill", "MCP conversion" or similar requests. Supports reading configuration from conversation context or file path.
+description: Convert MCP server configuration to Agent Skill. Triggered when users mention "MCP to skill", "convert MCP service to skill", "generate MCP skill", "MCP conversion" or similar requests. Supports reading configuration from conversation context or file path.
 ---
 
 ## Workflow
@@ -135,9 +135,9 @@ Create symlink for testing:
 ln -s ../../skills/<skill-name> .agents/skills/<skill-name>
 ```
 
-Or copy to Claude skills directory:
+Or copy to global skills directory:
 ```bash
-cp -r ./skills/<skill-name> ~/.claude/skills/
+cp -r ./skills/<skill-name> ~/.config/skills/
 ```
 
 ## Scripts
