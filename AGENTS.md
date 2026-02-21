@@ -1,106 +1,106 @@
 # AGENTS
 
-本文件面向 AI 助手，包含技术实现细节和约束规则。
+This file is for AI assistants, containing technical implementation details and constraint rules.
 
-## 目录结构
+## Directory Structure
 
 ```
 mengbo-skills/
-├── skills/                      # 开发目录（版本控制）
-│   └── pandoc-docx/             # 自己开发的 skill 源代码
-├── .agents/skills/              # 运行目录（AI 查找）
-│   ├── pandoc-docx -> ../../skills/pandoc-docx  # 软链接（测试用）
-│   ├── skill-creator/           # 外部安装的 skill（通过 find-skills）
-│   └── find-skills/             # 外部安装的 skill
-└── AGENTS.md                    # 本文件
+├── skills/                      # Development directory (version controlled)
+│   └── pandoc-docx/             # Custom skill source code
+├── .agents/skills/              # Runtime directory (AI lookup)
+│   ├── pandoc-docx -> ../../skills/pandoc-docx  # Symlink (for testing)
+│   ├── skill-creator/           # Externally installed skill (via find-skills)
+│   └── find-skills/             # Externally installed skill
+└── AGENTS.md                    # This file
 ```
 
-| 目录 | 用途 | 版本控制 | 存放内容 |
-|------|------|----------|----------|
-| `skills/` | 开发目录 | 是 | 自己开发的 skill 源代码 |
-| `.agents/skills/` | 运行目录 | 否 | 外部安装的 skills + 软链接 |
+| Directory | Purpose | Version Controlled | Contents |
+|-----------|---------|-------------------|----------|
+| `skills/` | Development | Yes | Custom skill source code |
+| `.agents/skills/` | Runtime | No | External skills + symlinks |
 
-**重要**：`.agents/` 被 `.gitignore` 排除，外部安装的 skills 不会被提交。
+**Important:** `.agents/` is excluded by `.gitignore`, externally installed skills will not be committed.
 
-## 创建新 Skill
+## Creating New Skills
 
-用户需要先安装开发工具：
+Users need to install development tools first:
 
 ```bash
-# 全局安装 find-skills
+# Install find-skills globally
 npx skills add https://github.com/vercel-labs/add-skill \
   --skill find-skills -g -a opencode -a claude-code -y
 
-# 使用 find-skills 为项目安装 skill-creator
+# Install skill-creator using find-skills
 npx skills add https://github.com/vercel-labs/add-skill --skill skill-creator
 ```
 
-安装好 skill-creator 后，用户会告诉 AI：
+After installing skill-creator, users will tell the AI:
 
 ```
-"创建一个名为 my-skill 的新 skill"
+"Create a new skill called my-skill"
 ```
 
-AI 会自动加载 skill-creator 并执行创建流程。
+The AI will automatically load skill-creator and execute the creation workflow.
 
-## 渐进式披露原则
+## Progressive Disclosure Principle
 
-Skills 使用三级加载系统：
+Skills use a three-tier loading system:
 
-1. **Metadata** (name + description)：始终在上下文 (~100 词)
-2. **SKILL.md body**：skill 触发后加载 (<5k 词)
-3. **Bundled resources**：按需加载（scripts 可直接执行）
+1. **Metadata** (name + description): Always in context (~100 words)
+2. **SKILL.md body**: Loaded after skill triggers (<5k words)
+3. **Bundled resources**: Loaded on demand (scripts can be executed directly)
 
-## 测试命令
+## Testing Commands
 
 ```bash
-# 在项目根目录，创建软链接进行测试
+# Create symlink for testing in project root
 ln -s ../../skills/my-skill .agents/skills/my-skill
 
-# 在项目根目录，执行如下命令删除软链接
+# Remove symlink in project root
 rm .agents/skills/my-skill
 
-# 在项目根目录，查看所有 skills
+# List all skills in project root
 ls -la .agents/skills/
 
-# 在项目根目录查看软链接目标
+# View symlink targets in project root
 ls -la skills/
 ```
 
-## 安装外部 Skills
+## Installing External Skills
 
 ```bash
-# 安装到项目
+# Install to project
 npx skills add https://github.com/vercel-labs/add-skill --skill find-skills
 ```
 
-## 约束规则
+## Constraint Rules
 
-**使用英文编写**：
-Skill 是项目的输出产物，不仅面向中文用户，应使用英文编写以确保全球可用性。
-- SKILL.md 正文使用英文
-- 注释和文档使用英文
-- 输出消息和错误信息使用英文
+**Write in English:**
+Skills are project outputs intended for global users, not just Chinese speakers. Use English to ensure worldwide usability.
+- SKILL.md body must be in English
+- Comments and documentation must be in English
+- Output messages and error messages must be in English
 
-**不要创建额外文档文件**：：
+**Don't create additional documentation files:**
 - ❌ README.md
 - ❌ INSTALLATION_GUIDE.md
 - ❌ QUICK_REFERENCE.md
 - ❌ CHANGELOG.md
 
-Skill 只包含 AI 完成任务必需的内容，不要包含辅助性文档。
+Skills should only contain content essential for AI to complete tasks, no supplementary documentation.
 
-**不要提交外部安装的 skills**：
-`.agents/` 被 gitignore 排除，外部 skills 不会被提交。每个开发者需要自己安装。
+**Don't commit externally installed skills:**
+`.agents/` is gitignored, external skills won't be committed. Each developer needs to install them separately.
 
-**保持平台无关性**：
-Skill 是通用的 Agent 能力扩展，描述应避免绑定特定 AI 工具或平台。
-- 不在 description 中提及具体的 AI 助手名称（如 Claude、GPT、opencode 等）
-- 使用通用术语如 "AI assistant" 或 "Agent" 而非特定产品名
-- 聚焦功能本身，让用户自行决定在什么场景下使用
+**Maintain platform independence:**
+Skills are general Agent capability extensions, descriptions should avoid binding to specific AI tools or platforms.
+- Don't mention specific AI assistant names (like Claude, GPT, opencode, etc.) in descriptions
+- Use generic terms like "AI assistant" or "Agent" instead of specific product names
+- Focus on functionality itself, let users decide where to use it
 
-## 相关资源
+## Related Resources
 
-- [skill-creator](.agents/skills/skill-creator/SKILL.md) - 创建 skills 的完整指南（需先安装）
+- [skill-creator](.agents/skills/skill-creator/SKILL.md) - Complete guide for creating skills (install first)
 - [Anthropic Skills](https://github.com/anthropics/skills)
-- [Agent Skills 标准](https://agentskills.io)
+- [Agent Skills Standard](https://agentskills.io)
