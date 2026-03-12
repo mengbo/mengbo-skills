@@ -66,6 +66,28 @@ Transforms MCP (Model Context Protocol) server configurations into reusable Agen
 4. Fix execution instructions in generated SKILL.md
 5. Test with symlink
 
+### docling-cli
+
+**Convert documents to structured formats with OCR, table extraction, and AI-powered features.**
+
+Convert PDF, DOCX, PPTX, images, and other formats to Markdown, JSON, HTML, and more. Supports:
+- Converting PDF/DOCX/PPTX/images to Markdown/JSON/HTML
+- OCR for scanned PDFs
+- Table extraction from documents
+- Vision Language Models (VLM) for better image/text extraction
+- Audio transcription using ASR models
+- Batch document processing
+
+**Key Features:**
+- Auto-detects input format
+- OCR enabled by default
+- Table extraction enabled by default
+- VLM pipeline for macOS/Apple Silicon performance
+- Multiple image export modes (placeholder, embedded, referenced)
+
+**Platform Recommendations:**
+- macOS/Apple Silicon: Use VLM pipeline for better performance
+
 ## Using Skills in Other Projects
 
 ```bash
@@ -131,10 +153,12 @@ rm .agents/skills/my-skill
 mengbo-skills/
 ├── skills/                      # Development directory (version controlled)
 │   ├── pandoc-docx/             # Document format conversion
+│   ├── docling-cli/             # Document conversion with OCR and AI
 │   ├── minimax-coding-plan/     # MiniMax Coding Plan MCP
 │   └── mcp-to-skill/            # MCP to Skill converter
 ├── .agents/skills/              # AI assistant runtime directory (gitignored)
 │   ├── pandoc-docx -> ../../skills/pandoc-docx  # Symlink (for testing)
+│   ├── docling-cli -> ../../skills/docling-cli    # Symlink (for testing)
 │   ├── skill-creator/           # Externally installed skill
 │   └── find-skills/             # Externally installed skill
 ├── README.md                    # Project documentation (this file)

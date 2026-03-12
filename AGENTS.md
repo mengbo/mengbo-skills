@@ -7,9 +7,13 @@ This file is for AI assistants, containing technical implementation details and 
 ```
 mengbo-skills/
 ├── skills/                      # Development directory (version controlled)
-│   └── pandoc-docx/             # Custom skill source code
+│   ├── pandoc-docx/             # Document format conversion
+│   ├── docling-cli/             # Document conversion with OCR and AI
+│   ├── minimax-coding-plan/     # MiniMax Coding Plan MCP
+│   └── mcp-to-skill/          # MCP to Skill converter
 ├── .agents/skills/              # Runtime directory (AI lookup)
 │   ├── pandoc-docx -> ../../skills/pandoc-docx  # Symlink (for testing)
+│   ├── docling-cli -> ../../skills/docling-cli    # Symlink (for testing)
 │   ├── skill-creator/           # Externally installed skill (via find-skills)
 │   └── find-skills/             # Externally installed skill
 └── AGENTS.md                    # This file
